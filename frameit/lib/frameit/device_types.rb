@@ -75,6 +75,10 @@ module Frameit
   end
 
   module Devices
+    ANDROID_TABLET_7_GENERIC ||= Frameit::Device.new("android-tablet-7inch-generic", "Android Tablet 7 Inch Generic", 7, [[1200, 1920], [1920, 1200]], 323, Color::BLACK, Platform::ANDROID)
+    ANDROID_TABLET_10_GENERIC ||= Frameit::Device.new("android-tablet-10inch-generic", "Android Tablet 10 Inch Generic", 7, [[1600, 2560], [2560, 1600]], 299, Color::BLACK, Platform::ANDROID)
+    GOOGLE_PIXEL_2_XL ||= Frameit::Device.new("google-pixel-2-xl", "Google Pixel 2 XL", 9, [[1440, 2880], [2880, 1440]], 441, Color::JUST_BLACK, Platform::ANDROID)
+    
     GOOGLE_PIXEL_3 ||= Frameit::Device.new("google-pixel-3", "Google Pixel 3", 7, [[1080, 2160], [2160, 1080]], 443, Color::JUST_BLACK, Platform::ANDROID)
     GOOGLE_PIXEL_3_XL ||= Frameit::Device.new("google-pixel-3-xl", "Google Pixel 3 XL", 7, [[1440, 2960], [2960, 1440]], 523, Color::JUST_BLACK, Platform::ANDROID)
     # Google Pixel 4's priority should be higher than Samsung Galaxy S10+ (priority 8):
