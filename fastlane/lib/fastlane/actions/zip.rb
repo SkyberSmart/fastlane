@@ -10,8 +10,8 @@ module Fastlane
           @verbose = params[:verbose]
           @password = params[:password]
           @symlinks = params[:symlinks]
-          @include = params[:include]
-          @exclude = params[:exclude]
+          @include = params[:include] || []
+          @exclude = params[:exclude] || []
 
           @output_path += ".zip" unless @output_path.end_with?(".zip")
         end
@@ -34,7 +34,7 @@ module Fastlane
         def run_zip_command
           # The 'zip' command archives relative to the working directory, chdir to produce expected results relative to `path`
           Dir.chdir(File.expand_path("..", path)) do
-            Actions.sh(zip_command)
+            Actions.sh(*zip_command)
           end
         end
 
@@ -68,6 +68,7 @@ module Fastlane
           command
         end
       end
+
       def self.run(params)
         Runner.new(params).run
       end

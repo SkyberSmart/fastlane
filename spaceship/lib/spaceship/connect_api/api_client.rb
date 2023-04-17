@@ -157,8 +157,6 @@ module Spaceship
       end
 
       def with_asc_retry(tries = 5, &_block)
-        tries = 1 if Object.const_defined?("SpecHelper")
-
         response = yield
 
         status = response.status if response
@@ -170,9 +168,16 @@ module Spaceship
 
         return response
       rescue UnauthorizedAccessError => error
-        # Catch unathorized access and re-raising
-        # There is no need to try again
-        raise error
+        tries -= 1
+        puts(error) if Spaceship::Globals.verbose?
+        if tries.zero?
+          raise error
+        else
+          msg = "Token has expired or has been revoked! Trying to refresh..."
+          puts(msg) if Spaceship::Globals.verbose?
+          @token.refresh!
+          retry
+        end
       rescue TimeoutRetryError => error
         tries -= 1
         puts(error) if Spaceship::Globals.verbose?
@@ -208,7 +213,13 @@ module Spaceship
       # Overridden from Spaceship::Client
       def handle_error(response)
         body = response.body.empty? ? {} : response.body
-        body = JSON.parse(body) if body.kind_of?(String)
+
+        # Setting body nil if invalid JSON which can happen if 502
+        begin
+          body = JSON.parse(body) if body.kind_of?(String)
+        rescue
+          nil
+        end
 
         case response.status.to_i
         when 401
@@ -220,6 +231,14 @@ module Spaceship
             raise ProgramLicenseAgreementUpdated, format_errors(response)
           else
             raise AccessForbiddenError, format_errors(response)
+          end
+        when 502
+          # Issue - https://github.com/fastlane/fastlane/issues/19264
+          # This 502 with "Could not process this request" body sometimes
+          # work and sometimes doesn't
+          # Usually retrying once or twice will solve the issue
+          if body && body.include?("Could not process this request")
+            raise BadGatewayError, "Could not process this request"
           end
         end
       end

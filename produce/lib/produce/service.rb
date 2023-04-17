@@ -16,6 +16,10 @@ module Produce
       self.new.disable(options, args)
     end
 
+    def self.available_services(options, args)
+      self.new.available_services(options, args)
+    end
+
     def enable(options, _args)
       unless bundle_id
         UI.message("[DevCenter] App '#{Produce.config[:app_identifier]}' does not exist")
@@ -38,6 +42,17 @@ module Produce
       UI.message("Disabling services")
       disabled = update(false, options)
       UI.success("Done! Disabled #{disabled} services.")
+    end
+
+    def available_services(options, _args)
+      unless bundle_id
+        UI.message("[DevCenter] App '#{Produce.config[:app_identifier]}' does not exist")
+        return
+      end
+
+      UI.success("[DevCenter] App found '#{bundle_id.name}'")
+      UI.message("Fetching available services")
+      return Spaceship::ConnectAPI::Capabilities.all
     end
 
     def valid_services_for(options)
@@ -82,7 +97,7 @@ module Produce
         bundle_id.update_capability(ACCESS_WIFI_INFORMATION, enabled: on)
       end
 
-      if options.access_wifi
+      if options.app_attest
         UI.message("\tApp Attest")
         bundle_id.update_capability(APP_ATTEST, enabled: on)
       end

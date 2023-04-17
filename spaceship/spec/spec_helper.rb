@@ -67,6 +67,7 @@ def before_each_spaceship
   TunesStubbing.itc_stub_promocodes_history
   TunesStubbing.itc_stub_supported_countries
 
+  ConnectAPIStubbing::Provisioning.stub_available_bundle_id_capabilities
   ConnectAPIStubbing::Provisioning.stub_bundle_ids
   ConnectAPIStubbing::Provisioning.stub_bundle_id
   ConnectAPIStubbing::Provisioning.stub_patch_bundle_id_capability
@@ -86,6 +87,7 @@ def before_each_spaceship
   ConnectAPIStubbing::TestFlight.stub_beta_testers
   ConnectAPIStubbing::TestFlight.stub_beta_tester_metrics
   ConnectAPIStubbing::TestFlight.stub_build_beta_details
+  ConnectAPIStubbing::TestFlight.stub_build_bundles
   ConnectAPIStubbing::TestFlight.stub_build_deliveries
   ConnectAPIStubbing::TestFlight.stub_builds
   ConnectAPIStubbing::TestFlight.stub_pre_release_versions

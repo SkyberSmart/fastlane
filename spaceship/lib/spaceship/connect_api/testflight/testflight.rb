@@ -204,11 +204,13 @@ module Spaceship
           test_flight_request_client.delete("builds/#{build_id}/relationships/betaGroups", nil, body)
         end
 
-        def create_beta_group(app_id: nil, group_name: nil, public_link_enabled: false, public_link_limit: 10_000, public_link_limit_enabled: false)
+        def create_beta_group(app_id: nil, group_name: nil, is_internal_group: false, public_link_enabled: false, public_link_limit: 10_000, public_link_limit_enabled: false)
           body = {
             data: {
               attributes: {
                 name: group_name,
+                isInternalGroup: is_internal_group,
+                hasAccessToAllBuilds: is_internal_group ? true : false, # Undocumented of 2021-08-02 in ASC API docs and ASC Open API spec. This is the default behavior on App Store Connect and does work with both Apple ID and API Token
                 publicLinkEnabled: public_link_enabled,
                 publicLinkLimit: public_link_limit,
                 publicLinkLimitEnabled: public_link_limit_enabled
@@ -218,11 +220,11 @@ module Spaceship
                   data: {
                     id: app_id,
                     type: "apps"
-                  }
-                }
+                  },
+                },
               },
-              type: "betaGroups"
-            }
+              type: "betaGroups",
+            },
           }
           test_flight_request_client.post("betaGroups", body)
         end
@@ -286,6 +288,28 @@ module Spaceship
           }
 
           test_flight_request_client.post("bulkBetaTesterAssignments", body)
+        end
+
+        # attributes - {email: "", firstName: "", lastName: ""}
+        def post_beta_tester_assignment(beta_group_ids: [], attributes: {})
+          body = {
+            data: {
+              attributes: attributes,
+              relationships: {
+                betaGroups: {
+                  data: beta_group_ids.map do |id|
+                    {
+                      type: "betaGroups",
+                      id: id
+                    }
+                  end
+                }
+              },
+              type: "betaTesters"
+            }
+          }
+
+          test_flight_request_client.post("betaTesters", body)
         end
 
         def add_beta_tester_to_group(beta_group_id: nil, beta_tester_ids: nil)
@@ -389,6 +413,15 @@ module Spaceship
         end
 
         #
+        # buildBundles
+        #
+
+        def get_build_bundles_build_bundle_file_sizes(build_bundle_id:, limit: nil)
+          params = test_flight_request_client.build_params(filter: nil, includes: nil, limit: limit, sort: nil, cursor: nil)
+          test_flight_request_client.get("buildBundles/#{build_bundle_id}/buildBundleFileSizes", params)
+        end
+
+        #
         # builds
         #
 
@@ -446,9 +479,9 @@ module Spaceship
         # buildDeliveries
         #
 
-        def get_build_deliveries(filter: {}, includes: nil, limit: nil, sort: nil)
+        def get_build_deliveries(app_id:, filter: {}, includes: nil, limit: nil, sort: nil)
           params = test_flight_request_client.build_params(filter: filter, includes: includes, limit: limit, sort: sort)
-          test_flight_request_client.get("buildDeliveries", params)
+          test_flight_request_client.get("apps/#{app_id}/buildDeliveries", params)
         end
 
         #

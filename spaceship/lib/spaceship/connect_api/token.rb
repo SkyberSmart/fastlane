@@ -21,13 +21,15 @@ module Spaceship
       attr_reader :duration
       attr_reader :expiration
 
+      attr_reader :key_raw
+
       # Temporary attribute not needed to create the JWT text
       # There is no way to determine if the team associated with this
       # key is for App Store or Enterprise so this is the temporary workaround
       attr_accessor :in_house
 
       def self.from(hash: nil, filepath: nil)
-        api_token ||= self.create(**hash) if hash
+        api_token ||= self.create(**hash.transform_keys(&:to_sym)) if hash
         api_token ||= self.from_json_file(filepath) if filepath
         return api_token
       end
@@ -88,14 +90,17 @@ module Spaceship
       end
 
       def refresh!
-        @expiration = Time.now + @duration
+        now = Time.now
+        @expiration = now + @duration
 
         header = {
-          kid: key_id
+          kid: key_id,
+          typ: 'JWT'
         }
 
         payload = {
           iss: issuer_id,
+          iat: now.to_i,
           exp: @expiration.to_i,
           aud: 'appstoreconnect-v1'
         }
